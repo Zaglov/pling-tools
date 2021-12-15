@@ -28,6 +28,11 @@ class SendPricesCommand extends Command
     protected function configure(): void
     {
 
+        $this   ->  addOption('key', null, InputOption::VALUE_OPTIONAL, 'API Key')
+                ->  addOption('server', null, InputOption::VALUE_OPTIONAL, 'API Key')
+                ->  addOption('file', null, InputOption::VALUE_OPTIONAL, 'Abspath to XLS file')
+        ;
+
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -35,16 +40,42 @@ class SendPricesCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io -> title('Preparing to import prices:');
 
-        $file = $io -> ask('Bitte Pfad zur XLS-Datei angeben.',null,function($file){
+        $file = $input -> getOption('file');
+        $key = $input -> getOption('key');
+        $server = $input -> getOption('server');
 
-            if(!file_exists($file)){
-                throw new \RuntimeException('Der angegebene Pfad ist ungültig.');
-            }
+        if($file == null || !file_exists($file)){
+            $file = $io -> ask('Bitte Pfad zur XLS-Datei angeben.',null,function($file){
 
-            return $file;
+                if(!file_exists($file)){
+                    throw new \RuntimeException('Der angegebene Pfad ist ungültig.');
+                }
 
-        });
+                return $file;
 
+            });
+        }
+
+        if($server == null || !filter_var($server, FILTER_VALIDATE_URL)){
+            $server = $io -> ask('Bitte gib einen Zielserver an.',null, function($url){
+
+                if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                    throw new \RuntimeException('Bitte gibt eine gültige URL für den Server an!');
+                }
+
+                return $url;
+
+            });
+        }
+
+        if($key == null){
+
+            $key = $io -> ask('Bitte gib deinen API-Schlüssel ein.',null,function ($key) {
+                if (empty($key)) {throw new \RuntimeException('Du musst einen API-Schlüssel eingeben!');}
+                return $key;
+            });
+
+        }
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $document = $reader->load($file);
@@ -71,23 +102,6 @@ class SendPricesCommand extends Command
         $line_count = count($data);
 
         $io -> info("Bereit {$line_count} Preis-Updates zu senden.");
-
-        $server = $io -> ask('Bitte gib einen Zielserver an.',null, function($url){
-
-            if (!filter_var($url, FILTER_VALIDATE_URL)) {
-                throw new \RuntimeException('Bitte gibt eine gültige URL für den Server an!');
-            }
-
-            return $url;
-
-        });
-
-        $key = $io -> ask('Bitte gib deinen API-Schlüssel ein.',null,function ($key) {
-            if (empty($key)) {throw new \RuntimeException('Du musst einen API-Schlüssel eingeben!');}
-            return $key;
-        });
-
-
 
         $io -> info("Sende Daten an ".$server." mit dem Key ".$key);
         $io -> progressStart($line_count);
