@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class SendPricesCommand extends Command
 {
@@ -17,10 +17,13 @@ class SendPricesCommand extends Command
     protected static $defaultDescription = 'Add a short description for your command';
 
     private $http_client;
+    private $params;
 
-    public function __construct(HttpClientInterface $http_client){
+    public function __construct(HttpClientInterface $http_client, ParameterBagInterface $params){
 
         $this -> http_client = $http_client;
+        $this -> params = $params;
+
         parent::__construct();
 
     }
@@ -41,8 +44,11 @@ class SendPricesCommand extends Command
         $io -> title('Preparing to import prices:');
 
         $file = $input -> getOption('file');
-        $key = $input -> getOption('key');
-        $server = $input -> getOption('server');
+        $key = $input -> getOption('key') ?? $this -> params -> get('pling_api_key');
+        $server = $input -> getOption('server') ?? $this -> params -> get('pling_server');
+
+
+        var_dump($server);
 
         if($file == null || !file_exists($file)){
             $file = $io -> ask('Bitte Pfad zur XLS-Datei angeben.',null,function($file){
@@ -68,7 +74,7 @@ class SendPricesCommand extends Command
             });
         }
 
-        if($key == null){
+        if($key == null || $key == ''){
 
             $key = $io -> ask('Bitte gib deinen API-Schlüssel ein.',null,function ($key) {
                 if (empty($key)) {throw new \RuntimeException('Du musst einen API-Schlüssel eingeben!');}
