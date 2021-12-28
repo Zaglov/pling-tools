@@ -47,9 +47,6 @@ class SendPricesCommand extends Command
         $key = $input -> getOption('key') ?? $this -> params -> get('pling_api_key');
         $server = $input -> getOption('server') ?? $this -> params -> get('pling_server');
 
-
-        var_dump($server);
-
         if($file == null || !file_exists($file)){
             $file = $io -> ask('Bitte Pfad zur XLS-Datei angeben.',null,function($file){
 
