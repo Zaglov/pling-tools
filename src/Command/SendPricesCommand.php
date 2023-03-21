@@ -260,7 +260,7 @@ class SendPricesCommand extends Command
 
             }
 
-            if($line['sale_price'] <= 0 && $line['sale_price'] !== null){
+            if($line['sale_price'] <= 0 && $line['sale_price'] !== null && $line['sale_price'] != ''){
 
                 $line['line_is_valid'] = 'no';
                 $line['line_validation_message'] = 'Sale price is 0';
