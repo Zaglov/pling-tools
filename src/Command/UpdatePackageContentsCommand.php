@@ -85,13 +85,14 @@ class UpdatePackageContentsCommand extends Command
 
         $sheet_index = $io -> choice('Bitte wähle ein Tabellenblatt zum Verarbeiten aus.',$document->getSheetNames(),0);
 
+        $io -> writeln('Beginne Verarbeitung');
+
         $sheet = $document -> getSheetByName($sheet_index);
         $data = $this -> parse_xls_sheet($sheet);
 
         $invalid_lines = array_filter($data,function($line){
             return $line['line_is_valid'] !== 'yes';
         });
-
 
         if(count($invalid_lines) > 0){
 
@@ -102,17 +103,11 @@ class UpdatePackageContentsCommand extends Command
 
         }
 
-
-
         $line_count = count($data);
         $io -> info("Bereit {$line_count} Paketinhalte zu senden.");
 
-
         $payloads = $this -> convert_payload($data);
         $payload_count = count($payloads);
-
-
-
 
         $io -> info("Es werden insgesamt ".$payload_count.' Requests benötigt.');
 
@@ -258,20 +253,20 @@ class UpdatePackageContentsCommand extends Command
 
         foreach($parsed as $item){
 
-            if(!array_key_exists($item['package'],$data)){
+            if(!array_key_exists($item['parent_sku'],$data)){
 
-                $data[$item['package']] = [
-                    'sku' => $item['package'],
+                $data[$item['parent_sku']] = [
+                    'sku' => $item['parent_sku'],
                     'picklist' => []
                 ];
 
             }
 
-            $item['sku'] = $item['content'];
-            $item['quantity'] = $item['amount'];
+            $item['sku'] = $item['content_sku'];
+            $item['quantity'] = $item['content_quantity'];
 
 
-            $data[$item['package']]['picklist'][] = array_intersect_key($item,array_flip(['sku','quantity']));
+            $data[$item['parent_sku']]['picklist'][] = array_intersect_key($item,array_flip(['sku','quantity']));
 
         }
 
@@ -295,21 +290,21 @@ class UpdatePackageContentsCommand extends Command
         }
 
 
-        if(empty($line['content'])){
+        if(empty($line['content_sku'])){
 
             $line['line_is_valid'] = 'no';
             $line['line_validation_message'] = 'Content SKU is missing';
 
         }
 
-        if(empty($line['package'])){
+        if(empty($line['parent_sku'])){
 
             $line['line_is_valid'] = 'no';
             $line['line_validation_message'] = 'Parent SKU is missing';
 
         }
 
-        if(empty($line['amount'])){
+        if(empty($line['content_quantity'])){
 
             $line['line_is_valid'] = 'no';
             $line['line_validation_message'] = 'Quantity is missing';
