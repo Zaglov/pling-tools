@@ -88,10 +88,9 @@ class SendPricesCommand extends Command
         $sheet = $document -> getSheetByName($sheet_index);
         $data = $this -> parse_xls_sheet($sheet);
 
-        $invalid_lines = array_filter($data,function($line){
+        $invalid_lines = array_values(array_filter($data,function($line){
             return $line['line_is_valid'] !== 'yes';
-        });
-
+        }));
 
         if(count($invalid_lines) > 0){
 
