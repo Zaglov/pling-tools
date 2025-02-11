@@ -125,6 +125,8 @@ class UpdatePackageContentsCommand extends Command
             $io -> progressAdvance();
 
 
+            $payload['calculate_delta'] = true;
+
             // Get Product by SKU
 
 
