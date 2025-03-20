@@ -269,6 +269,19 @@ class SendPricesCommand extends Command
 
         }
 
+
+        if(array_key_exists('sale_price_dates_from',$line) && !empty($line['sale_price_dates_from'])){
+
+            $line['sale_price_dates_from'] = date('Y-m-d',strtotime($line['sale_price_dates_from']));
+
+        }
+
+        if(array_key_exists('sale_price_dates_to',$line) && !empty($line['sale_price_dates_to'])){
+
+            $line['sale_price_dates_to'] = date('Y-m-d',strtotime($line['sale_price_dates_to']));
+
+        }
+
         return $line;
 
     }
