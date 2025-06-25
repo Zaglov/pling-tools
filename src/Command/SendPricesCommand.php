@@ -101,6 +101,17 @@ class SendPricesCommand extends Command
 
         }
 
+
+        uasort($data, function ($a, $b) {
+            // Zuerst nach line_no numerisch vergleichen
+            if ((int)$a['line_no'] !== (int)$b['line_no']) {
+                return (int)$a['line_no'] <=> (int)$b['line_no'];
+            }
+
+            // Wenn line_no gleich ist, nach sku alphabetisch vergleichen
+            return strcmp($a['sku'], $b['sku']);
+        });
+
         $line_count = count($data);
 
         $io -> info("Bereit {$line_count} Preis-Updates zu senden.");
@@ -131,8 +142,6 @@ class SendPricesCommand extends Command
             $io -> progressAdvance(count($chunk));
 
             $content = $response->toArray();
-
-
 
             foreach($content['payload'] as $index => $result){
 
@@ -285,5 +294,8 @@ class SendPricesCommand extends Command
         return $line;
 
     }
+
+
+
 
 }
